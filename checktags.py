@@ -9,22 +9,24 @@ directly from the command line.
 import html.parser
 import urllib.request
 import urllib.error
+import os.path
 
 def CheckTags():
     """Reads a URL from the user and then checks it for tag matching."""
     # url = input("URL: ")
     url = 'http://people.reed.edu/~esroberts/index.html'
-    checkURL(url)
-
-def checkURL(url):
+    base = os.path.dirname(url)
+    checkURL(url,base)
+def checkURL(url,base):
     """Checks whether the tags are balanced in the specified URL."""
     # response = urllib.request.Request(url)
+
     try: 
         response = urllib.request.urlopen(url)
         print("!",type(response))
         parser = HTMLTagParser()
         # parser.checkTags(response.read().decode("UTF-8"))
-        parser.brokenLinks(response.read().decode("UTF-8"))
+        parser.brokenLinks(response.read().decode("UTF-8"),base)
     except urllib.error.URLError as e: 
         print("Encountered a problem:", e.getcode(), e.reason)
 # From https://python.readthedocs.io/en/stable/howto/urllib2.html
@@ -53,7 +55,7 @@ class HTMLTagParser(html.parser.HTMLParser):
             startTag,startLine = self._stack.pop()
             print("Missing </" + startTag + "> for <" + startTag +
                   "> at line " + str(startLine))
-    def brokenLinks(self,text):
+    def brokenLinks(self,text,base):
         '''
         Checks for all links in webpages and reports all broken 
         links using error checking methods 
@@ -71,8 +73,9 @@ class HTMLTagParser(html.parser.HTMLParser):
                 print("Rad!",response.getcode())
             except urllib.error.URLError as e: 
                 print("Encountered a problem on line",line, "with tag <",tag, "> for link",link,"\n", e.reason)
-
-
+            except ValueError:
+                response = urllib.request.urlopen(base+"/"+link)
+                print("Rad! We did it better",response.getcode())
     def handle_starttag(self, startTag, attributes):
         """Overrides the callback function for start tags."""
         startLine,_ = self.getpos()
