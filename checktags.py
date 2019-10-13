@@ -68,14 +68,11 @@ class HTMLTagParser(html.parser.HTMLParser):
             #attempt to parse, if error, print. otherwise, move on
             try:
                 tag, line, link = self.linkStack.pop()
-                print(len(self.linkStack))
                 response = urllib.request.urlopen(link)
-                print("Rad!",response.getcode())
             except urllib.error.URLError as e: 
-                print("Encountered a problem on line",line, "with tag <",tag, "> for link",link,"\n", e.reason)
+                print("Encountered a problem on line "+str(line)+ " with tag <"+str(tag)+ "> for link "+str(link)+"\n"+ str(e.reason))
             except ValueError:
                 response = urllib.request.urlopen(base+"/"+link)
-                print("Rad! We did it better",response.getcode())
     def handle_starttag(self, startTag, attributes):
         """Overrides the callback function for start tags."""
         startLine,_ = self.getpos()
@@ -85,8 +82,6 @@ class HTMLTagParser(html.parser.HTMLParser):
                 self.linkStack.append((startTag,startLine,attributes[0][1]))
             elif attributes[0][0] == 'src':
                 self.linkStack.append((startTag,startLine,attributes[0][1]))
-                # print(startLine, attributes[0][1])
-            # print(startTag,startLine, attributes)
 
     def handle_endtag(self, endTag):
         """Overrides the callback function for end tags."""
